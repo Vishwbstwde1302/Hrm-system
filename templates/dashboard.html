@@ -1,0 +1,957 @@
+{% extends "base.html" %}
+
+{% block title %}AI Tech HRM Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-rocket"></i>
+                    <span>AI Tech HRM</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-menu">
+                    <button id="userMenuBtn" class="user-menu-btn">
+                        <div class="user-avatar">{{ user_name|first }}</div>
+                        <span>{{ user_name }} ({{ user_role }})</span>
+                    </button>
+                    <div id="userMenuPanel" class="user-menu-panel">
+                        <div class="user-info">
+                            <p>{{ user_name }}</p>
+                            <p>{{ user.email }}</p>
+                            <p>{{ user_role }}</p>
+                        </div>
+                        <button class="logout-btn" onclick="window.location.href='/logout'">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                <div class="notifications">
+                    <button id="notificationBtn" class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span id="notificationBadge" class="notification-badge">0</span>
+                    </button>
+                    <div id="notificationPanel" class="notification-panel">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button id="clearNotificationsBtn" class="btn-secondary">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <div class="no-notifications">No new notifications</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <div class="nav-content">
+            <button class="nav-tab active" data-tab="overview"><i class="fas fa-home"></i> Overview</button>
+            <button class="nav-tab" data-tab="availability"><i class="fas fa-calendar"></i> Availability</button>
+            <button class="nav-tab" data-tab="performance"><i class="fas fa-chart-line"></i> Performance</button> 
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div id="overviewTab" class="tab-content active">
+            <div class="dashboard-header">
+                <h1>Overview</h1>
+                <p>Week of <span id="currentWeek"></span></p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-content">
+                        <h3>Availability Status</h3>
+                        <p id="availabilityStatus" class="status-badge">Checking...</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="stat-content">
+                        <h3>Planned Hours</h3>
+                        <p class="stat-value" id="plannedHours">0h</p>
+                    </div>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <div class="action-card" onclick="document.querySelector('.nav-tab[data-tab=availability]').click()">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>Submit Availability</span>
+                    </div>
+                    <div class="action-card" onclick="document.querySelector('.nav-tab[data-tab=performance]').click()">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>View Performance</span>
+                    </div>
+                    <div class="action-card" onclick="document.querySelector('.nav-tab[data-tab=timeTracker]').click()">
+                        <i class="fas fa-clock"></i>
+                        <span>Track Time</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="availabilityTab" class="tab-content">
+            <div class="availability-header">
+                <div>
+                    <h2>Availability</h2>
+                    <p>Week of <span id="availabilityWeek"></span></p>
+                </div>
+                <p class="total-hours">Total: <span id="totalHours">0h</span></p>
+            </div>
+            <form id="availabilityForm">
+                <input type="hidden" id="week-start" name="week-start">
+                <div class="days-grid">
+                    <div class="day-card">
+                        <div class="day-header">
+                            <h3>Monday</h3>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="monday-available" name="monday-available">
+                                <span>Available</span>
+                            </div>
+                        </div>
+                        <div class="day-content">
+                            <div class="form-group">
+                                <label>Hours</label>
+                                <input type="number" id="monday-hours" name="monday-hours" min="0" max="24" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea id="monday-notes" name="monday-notes" placeholder="Add notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-header">
+                            <h3>Tuesday</h3>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="tuesday-available" name="tuesday-available">
+                                <span>Available</span>
+                            </div>
+                        </div>
+                        <div class="day-content">
+                            <div class="form-group">
+                                <label>Hours</label>
+                                <input type="number" id="tuesday-hours" name="tuesday-hours" min="0" max="24" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea id="tuesday-notes" name="tuesday-notes" placeholder="Add notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-header">
+                            <h3>Wednesday</h3>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="wednesday-available" name="wednesday-available">
+                                <span>Available</span>
+                            </div>
+                        </div>
+                        <div class="day-content">
+                            <div class="form-group">
+                                <label>Hours</label>
+                                <input type="number" id="wednesday-hours" name="wednesday-hours" min="0" max="24" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea id="wednesday-notes" name="wednesday-notes" placeholder="Add notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="day-card">
+                        <div class="day-header">
+                            <h3>Thursday</h3>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="thursday-available" name="thursday-available">
+                                <span>Available</span>
+                            </div>
+                        </div>
+                        <div class="day-content">
+                            <div class="form-group">
+                                <label>Hours</label>
+                                <input type="number" id="thursday-hours" name="thursday-hours" min="0" max="24" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea id="thursday-notes" name="thursday-notes" placeholder="Add notes..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-message" id="hoursWarning" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Total hours must be 36
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Submit Availability
+                </button>
+            </form>
+        </div>
+
+        <div id="performanceTab" class="tab-content">
+            <div class="performance-header">
+                <h2>Performance</h2>
+                <p>Week of <span id="performanceWeek"></span></p>
+            </div>
+            <div class="weekly-summary">
+                <h3>Weekly Summary</h3>
+                <div id="weeklySummaryList" class="summary-list">
+                    <div class="no-data">Loading performance data...</div>
+                </div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="metric-label">Planned Hours</div>
+                        <div class="metric-value" id="metricPlanned">0h</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="metric-label">Actual Hours</div>
+                        <div class="metric-value" id="metricActual">0h</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-balance-scale"></i></div>
+                    <div>
+                        <div class="metric-label">Variance</div>
+                        <div class="metric-value" id="metricVariance">0h</div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div>
+                        <div class="metric-label">Days Worked</div>
+                        <div class="metric-value" id="metricDays">0/4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => {
+    console.log('Dashboard JS loaded');
+    // Navigation
+    const navTabs = document.querySelectorAll('.nav-tab');
+ moulds = document.querySelectorAll('.tab-content');
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationPanel = document.getElementById('notificationPanel');
+    const notificationList = document.getElementById('notificationList');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userMenuPanel = document.getElementById('userMenuPanel');
+    const availabilityForm = document.getElementById('availabilityForm');
+    const startTrackingBtn = document.getElementById('startTrackingBtn');
+    const stopTrackingBtn = document.getElementById('stopTrackingBtn');
+    const trackingDateInput = document.getElementById('trackingDate');
+    const refreshStatusBtn = document.getElementById('refreshStatusBtn');
+
+    // Helper function to get user email from cookie
+    function getUserEmail() {
+        const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+        const emailCookie = cookies.find(cookie => cookie.startsWith('user_email='));
+        const email = emailCookie ? decodeURIComponent(emailCookie.split('=')[1]) : null;
+        console.log('Retrieved user_email cookie:', email);
+        return email;
+    }
+
+    // Helper function to get current week
+    function getWeekDates() {
+        const today = new Date();
+        const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+        const lastDay = new Date(today.setDate(today.getDate() + 6));
+        return {
+            start: firstDay.toISOString().split('T')[0],
+            end: lastDay.toISOString().split('T')[0]
+        };
+    }
+
+    // Update week display
+    function updateWeekDisplay(weekStart) {
+        const startDate = new Date(weekStart);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+        const startStr = startDate.toISOString().split('T')[0];
+        const endStr = endDate.toISOString().split('T')[0];
+        const currentWeek = document.getElementById('currentWeek');
+        const availabilityWeek = document.getElementById('availabilityWeek');
+        const performanceWeek = document.getElementById('performanceWeek');
+        const weekStartInput = document.getElementById('week-start');
+        if (currentWeek) currentWeek.textContent = `${startStr} to ${endStr}`;
+        if (availabilityWeek) availabilityWeek.textContent = `${startStr} to ${endStr}`;
+        if (performanceWeek) performanceWeek.textContent = `${startStr} to ${endStr}`;
+        if (weekStartInput) weekStartInput.value = startStr;
+    }
+
+    // Update notifications
+    async function fetchNotifications() {
+        try {
+            console.log('Fetching notifications');
+            const response = await fetch('/api/notifications', {
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                console.error('Notification fetch failed:', response.status);
+                return [];
+            }
+            const notifications = await response.json();
+            console.log('Notifications:', notifications);
+            return notifications;
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return [];
+        }
+    }
+
+    function updateNotifications(notifications) {
+        if (notificationList && notificationBadge) {
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="no-notifications">No new notifications</div>';
+                notificationBadge.textContent = '0';
+                notificationBadge.classList.remove('show');
+            } else {
+                notificationList.innerHTML = notifications.map(notification => `
+                    <div class="notification-item ${notification.type}">
+                        <div class="notification-icon">
+                            <i class="fas fa-${notification.type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                        </div>
+                        <div class="notification-content">
+                            <p>${notification.message}</p>
+                            <span class="notification-time">${new Date(notification.timestamp).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+                notificationBadge.textContent = notifications.length;
+                notificationBadge.classList.add('show');
+            }
+        }
+    }
+
+    // Tab switching
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            console.log(`Switching to tab: ${tab.dataset.tab}`);
+            navTabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
+            if (tab.dataset.tab === 'timeTracker') {
+                fetchTimeEntries();
+                fetchDashboardData();
+            }
+        });
+    });
+
+    // Toggle notification panel
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', async () => {
+            console.log('Toggling notification panel');
+            notificationPanel.classList.toggle('show');
+            if (notificationPanel.classList.contains('show')) {
+                const notifications = await fetchNotifications();
+                updateNotifications(notifications);
+            }
+        });
+    }
+
+    // Clear notifications
+    if (clearNotificationsBtn) {
+        clearNotificationsBtn.addEventListener('click', async () => {
+            console.log('Clearing notifications');
+            try {
+                const response = await fetch('/api/notifications', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    updateNotifications([]);
+                    console.log('Notifications cleared');
+                } else {
+                    console.error('Failed to clear notifications:', response.status);
+                }
+            } catch (error) {
+                console.error('Error clearing notifications:', error);
+            }
+        });
+    }
+
+    // Toggle user menu
+    if (userMenuBtn) {
+        userMenuBtn.addEventListener('click', () => {
+            console.log('Toggling user menu');
+            userMenuPanel.classList.toggle('show');
+        });
+    }
+
+    // Close panels when clicking outside
+    document.addEventListener('click', (e) => {
+        if (notificationBtn && notificationPanel && !notificationBtn.contains(e.target) && !notificationPanel.contains(e.target)) {
+            notificationPanel.classList.remove('show');
+        }
+        if (userMenuBtn && userMenuPanel && !userMenuBtn.contains(e.target) && !userMenuPanel.contains(e.target)) {
+            userMenuPanel.classList.remove('show');
+        }
+    });
+
+    // Update total hours
+    function updateTotalHours() {
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday'];
+        let total = 0;
+        days.forEach(day => {
+            const hoursInput = document.getElementById(`${day}-hours`);
+            const availableCheckbox = document.getElementById(`${day}-available`);
+            if (availableCheckbox && availableCheckbox.checked && hoursInput) {
+                total += parseInt(hoursInput.value) || 0;
+            }
+        });
+        const totalHoursElement = document.getElementById('totalHours');
+        if (totalHoursElement) {
+            totalHoursElement.textContent = `${total}h`;
+        }
+        const warning = document.getElementById('hoursWarning');
+        if (warning) {
+            warning.classList.toggle('show', total !== 36);
+        }
+    }
+
+    // Availability form handling
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday'];
+    days.forEach(day => {
+        const checkbox = document.getElementById(`${day}-available`);
+        const hoursInput = document.getElementById(`${day}-hours`);
+        const notesInput = document.getElementById(`${day}-notes`);
+        if (checkbox && hoursInput && notesInput) {
+            checkbox.addEventListener('change', () => {
+                console.log(`Checkbox ${day}-available changed to ${checkbox.checked}`);
+                hoursInput.disabled = !checkbox.checked;
+                notesInput.disabled = !checkbox.checked;
+                updateTotalHours();
+            });
+            hoursInput.addEventListener('input', updateTotalHours);
+            notesInput.addEventListener('input', () => {
+                console.log(`Notes for ${day} updated: ${notesInput.value}`);
+            });
+        }
+    });
+
+    // Form submission
+    if (availabilityForm) {
+        availabilityForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = getUserEmail();
+            if (!email) {
+                console.error('No user email in cookie, redirecting to login');
+                alert('Your session has expired. Please log in again.');
+                window.location.href = '/';
+                return;
+            }
+
+            const formData = new FormData(availabilityForm);
+            const data = {
+                week_start: formData.get('week-start'),
+                monday_available: formData.get('monday-available') === 'on',
+                monday_hours: parseInt(formData.get('monday-hours')) || 0,
+                monday_notes: formData.get('monday-notes') || '',
+                tuesday_available: formData.get('tuesday-available') === 'on',
+                tuesday_hours: parseInt(formData.get('tuesday-hours')) || 0,
+                tuesday_notes: formData.get('tuesday-notes') || '',
+                wednesday_available: formData.get('wednesday-available') === 'on',
+                wednesday_hours: parseInt(formData.get('wednesday-hours')) || 0,
+                wednesday_notes: formData.get('wednesday-notes') || '',
+                thursday_available: formData.get('thursday-available') === 'on',
+                thursday_hours: parseInt(formData.get('thursday-hours')) || 0,
+                thursday_notes: formData.get('thursday-notes') || ''
+            };
+
+            if (!data.week_start) {
+                alert('Week start date is missing. Please try again.');
+                return;
+            }
+
+            try {
+                console.log('Submitting availability:', JSON.stringify(data, null, 2));
+                const response = await fetch('/api/availability', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Availability submission failed:', response.status, errorData);
+                    if (response.status === 401) {
+                        alert('Your session has expired. Please log in again.');
+                        window.location.href = '/';
+                    } else if (response.status === 400 && errorData.detail.includes('already exists')) {
+                        alert('Availability for this week has already been submitted.');
+                    } else if (response.status === 500) {
+                        alert(`Server error while submitting availability: ${errorData.detail || 'Please try again later.'}`);
+                    } else {
+                        alert(`Failed to submit availability: ${errorData.detail || 'Server error'}`);
+                    }
+                    return;
+                }
+                const responseData = await response.json();
+                console.log('Availability submitted successfully:', responseData);
+                alert('Availability submitted successfully');
+
+                const notification = {
+                    type: 'success',
+                    message: `Availability submitted for week ${data.week_start}`,
+                    timestamp: new Date().toISOString()
+                };
+                await fetch('/api/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(notification),
+                    credentials: 'include'
+                });
+
+                const notifications = await fetchNotifications();
+                updateNotifications(notifications);
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Error submitting availability:', error);
+                alert('Error connecting to server. Please check your connection and try again.');
+            }
+        });
+    }
+
+    // Time tracker handling
+    if (trackingDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        trackingDateInput.value = today;
+        const weekDates = getWeekDates();
+        trackingDateInput.min = weekDates.start;
+        trackingDateInput.max = weekDates.end;
+        trackingDateInput.addEventListener('change', () => {
+            fetchTimeEntries();
+        });
+    }
+
+    async function fetchTimeEntries() {
+        const date = trackingDateInput ? trackingDateInput.value : new Date().toISOString().split('T')[0];
+        try {
+            console.log(`Fetching time entries for ${date}`);
+            const response = await fetch(`/api/time/entries?date=${date}`, {
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Time entries fetch failed:', response.status, errorData);
+                if (response.status === 401) {
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '/';
+                } else if (response.status === 500) {
+                    alert(`Server error while fetching time entries: ${errorData.detail || 'Please try again later.'}`);
+                } else {
+                    alert(`Error fetching time entries: ${errorData.detail || 'Server error'}`);
+                }
+                return [];
+            }
+            const entries = await response.json();
+            console.log('Time entries:', entries);
+            updateTimeEntries(entries);
+            updateTodayTotal(entries);
+            return entries;
+        } catch (error) {
+            console.error('Error fetching time entries:', error);
+            return [];
+        }
+    }
+
+    function updateTimeEntries(entries) {
+        const timeEntriesList = document.getElementById('timeEntriesList');
+        const timerStatus = document.getElementById('timerStatus');
+        const startTimeDisplay = document.getElementById('startTime');
+        if (timeEntriesList && timerStatus && startTimeDisplay) {
+            if (entries.length === 0) {
+                timeEntriesList.innerHTML = '<div class="no-entries">No time entries for selected date</div>';
+            } else {
+                timeEntriesList.innerHTML = entries.map(entry => `
+                    <div class="time-entry">
+                        <div>
+                            <div class="entry-date">${entry.date}</div>
+                            <div class="entry-times">
+                                Check-in: ${entry.check_in ? new Date(entry.check_in).toLocaleTimeString() : 'N/A'}<br>
+                                Check-out: ${entry.check_out ? new Date(entry.check_out).toLocaleTimeString() : 'N/A'}<br>
+                                Hours: ${entry.hours ? entry.hours.toFixed(2) : '0.00'}h
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            const todayEntry = entries.find(entry => entry.date === new Date().toISOString().split('T')[0]);
+            if (todayEntry && todayEntry.check_in && !todayEntry.check_out) {
+                timerStatus.textContent = 'Tracking';
+                startTimeDisplay.textContent = `Started at ${new Date(todayEntry.check_in).toLocaleTimeString()}`;
+                startTrackingBtn.style.display = 'none';
+                stopTrackingBtn.style.display = 'block';
+            } else {
+                timerStatus.textContent = 'Ready to track';
+                startTimeDisplay.textContent = '';
+                startTrackingBtn.style.display = 'block';
+                stopTrackingBtn.style.display = 'none';
+            }
+        }
+    }
+
+    function updateTodayTotal(entries) {
+        const todayTotal = document.getElementById('todayTotal');
+        if (todayTotal) {
+            const todayEntry = entries.find(entry => entry.date === new Date().toISOString().split('T')[0]);
+            todayTotal.textContent = todayEntry && todayEntry.hours ? `${todayEntry.hours.toFixed(2)}h` : '0.0h';
+        }
+    }
+
+    if (startTrackingBtn) {
+        startTrackingBtn.addEventListener('click', async () => {
+            const date = trackingDateInput ? trackingDateInput.value : new Date().toISOString().split('T')[0];
+            try {
+                console.log('Starting tracking');
+                const response = await fetch('/api/time/checkin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date }),
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Check-in failed:', response.status, errorData);
+                    if (response.status === 401) {
+                        alert('Your session has expired. Please log in again.');
+                        window.location.href = '/';
+                    } else if (response.status === 400 && errorData.detail.includes('already checked in')) {
+                        alert('You are already checked in for today.');
+                    } else if (response.status === 500) {
+                        alert(`Server error while checking in: ${errorData.detail || 'Please try again later.'}`);
+                    } else {
+                        alert(`Error checking in: ${errorData.detail || 'Server error'}`);
+                    }
+                    return;
+                }
+                const responseData = await response.json();
+                console.log('Check-in successful:', responseData);
+                alert('Tracking started successfully');
+                const notification = {
+                    type: 'success',
+                    message: `Started tracking at ${new Date().toLocaleTimeString()}`,
+                    timestamp: new Date().toISOString()
+                };
+                await fetch('/api/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(notification),
+                    credentials: 'include'
+                });
+                fetchTimeEntries();
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Error checking in:', error);
+                alert('Error connecting to server. Please check your connection and try again.');
+            }
+        });
+    }
+
+    if (stopTrackingBtn) {
+        stopTrackingBtn.addEventListener('click', async () => {
+            try {
+                console.log('Stopping tracking');
+                const response = await fetch('/api/time/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Check-out failed:', response.status, errorData);
+                    if (response.status === 401) {
+                        alert('Your session has expired. Please log in again.');
+                        window.location.href = '/';
+                    } else if (response.status === 400 && errorData.detail.includes('not checked in')) {
+                        alert('You are not checked in today.');
+                    } else if (response.status === 500) {
+                        alert(`Server error while checking out: ${errorData.detail || 'Please try again later.'}`);
+                    } else {
+                        alert(`Error checking out: ${errorData.detail || 'Server error'}`);
+                    }
+                    return;
+                }
+                const responseData = await response.json();
+                console.log('Check-out successful:', responseData);
+                alert('Tracking stopped successfully');
+                const notification = {
+                    type: 'success',
+                    message: `Stopped tracking at ${new Date().toLocaleTimeString()}`,
+                    timestamp: new Date().toISOString()
+                };
+                await fetch('/api/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(notification),
+                    credentials: 'include'
+                });
+                fetchTimeEntries();
+                fetchDashboardData();
+            } catch (error) {
+                console.error('Error checking out:', error);
+                alert('Error connecting to server. Please check your connection and try again.');
+            }
+        });
+    }
+
+    // Fetch dashboard data
+    async function fetchDashboardData() {
+        const email = getUserEmail();
+        if (!email) {
+            console.error('No user email in cookie, redirecting to login');
+            alert('Your session has expired. Please log in again.');
+            window.location.href = '/';
+            return;
+        }
+
+        try {
+            console.log('Fetching availability status');
+            const statusResponse = await fetch('/api/availability/status', {
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            if (!statusResponse.ok) {
+                const errorData = await statusResponse.json().catch(() => ({}));
+                console.error('Availability status error:', statusResponse.status, errorData);
+                if (statusResponse.status === 401) {
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '/';
+                } else if (statusResponse.status === 500) {
+                    alert(`Server error while fetching availability status: ${errorData.detail || 'Please try again later.'}`);
+                } else {
+                    alert(`Error fetching availability status: ${errorData.detail || 'Server error'}`);
+                }
+                return;
+            }
+            const statusData = await statusResponse.json();
+            console.log('Availability status:', statusData);
+            updateWeekDisplay(statusData.week_start);
+            const availabilityStatus = document.getElementById('availabilityStatus');
+            if (availabilityStatus) {
+                availabilityStatus.textContent = statusData.submitted ? 'Submitted' : 'Not submitted';
+                availabilityStatus.className = `status-badge ${statusData.submitted ? 'status-submitted' : 'status-missing'}`;
+                availabilityStatus.innerHTML = statusData.submitted 
+                    ? '<i class="fas fa-check-circle"></i> Submitted'
+                    : '<i class="fas fa-exclamation-circle"></i> Not submitted';
+            }
+
+            console.log('Fetching performance data');
+            const perfResponse = await fetch('/api/performance', {
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            if (!perfResponse.ok) {
+                const errorData = await perfResponse.json().catch(() => ({}));
+                console.error('Performance data error:', perfResponse.status, errorData);
+                if (perfResponse.status === 401) {
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '/';
+                } else if (perfResponse.status === 500) {
+                    alert(`Server error while fetching performance data: ${errorData.detail || 'Please try again later.'}`);
+                } else {
+                    alert(`Error fetching performance data: ${errorData.detail || 'Server error'}`);
+                }
+                return;
+            }
+            const perfData = await perfResponse.json();
+            console.log('Performance data:', perfData);
+            const plannedHours = document.getElementById('plannedHours');
+            const metricPlanned = document.getElementById('metricPlanned');
+            const metricActual = document.getElementById('metricActual');
+            const metricVariance = document.getElementById('metricVariance');
+            const metricDays = document.getElementById('metricDays');
+            const weeklySummaryList = document.getElementById('weeklySummaryList');
+            
+            if (plannedHours) plannedHours.textContent = `${perfData.planned_hours.toFixed(2)}h`;
+            if (metricPlanned) metricPlanned.textContent = `${perfData.planned_hours.toFixed(2)}h`;
+            if (metricActual) metricActual.textContent = `${perfData.actual_hours.toFixed(2)}h`;
+            if (metricVariance) metricVariance.textContent = `${(perfData.actual_hours - perfData.planned_hours).toFixed(2)}h`;
+            if (metricDays) metricDays.textContent = `${perfData.days_worked}/4`;
+            if (weeklySummaryList) {
+                weeklySummaryList.innerHTML = perfData.summary.length ? 
+                    perfData.summary.map(item => `
+                        <div class="summary-entry">
+                            <div>
+                                <div class="entry-date">${item.day}</div>
+                                <div class="entry-activities">${item.notes || 'No notes'}</div>
+                            </div>
+                            <div class="entry-stats">
+                                <div class="entry-hours">${item.hours}h</div>
+                            </div>
+                        </div>
+                    `).join('') : '<div class="no-data">No performance data available for this week</div>';
+            }
+
+            // Render hours chart
+            const hoursChart = document.getElementById('hoursChart');
+            if (hoursChart) {
+                const ctx = hoursChart.getContext('2d');
+                if (window.hoursChartInstance) {
+                    window.hoursChartInstance.destroy();
+                }
+                window.hoursChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'],
+                        datasets: [
+                            {
+                                label: 'Planned Hours',
+                                data: perfData.planned_hours_by_day,
+                                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Actual Hours',
+                                data: perfData.actual_hours_by_day,
+                                backgroundColor: 'rgba(22, 163, 74, 0.5)',
+                                borderColor: 'rgba(22, 163, 74, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Hours'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Day'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Planned vs Actual Hours'
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+            alert('Error connecting to server. Please check your connection and try logging in again.');
+        }
+    }
+
+    // Check Ollama status
+    if (refreshStatusBtn) {
+        refreshStatusBtn.addEventListener('click', async () => {
+            try {
+                console.log('Checking AI status');
+                const response = await fetch('/api/ai-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: 'Test connection' }),
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Ollama status error:', response.status, errorData);
+                    if (response.status === 401) {
+                        alert('Your session has expired. Please log in again.');
+                        window.location.href = '/';
+                    } else if (response.status === 500) {
+                        alert(`Server error while checking AI status: ${errorData.detail || 'Please try again later.'}`);
+                    } else {
+                        alert(`Error checking AI status: ${errorData.detail || 'Server error'}`);
+                    }
+                    throw new Error('Failed to check Ollama status');
+                }
+                const data = await response.json();
+                const connectionStatus = document.getElementById('connectionStatus');
+                const modelSelection = document.getElementById('modelSelection');
+                const setupInstructions = document.getElementById('setupInstructions');
+                const modelInfo = document.getElementById('modelInfo');
+                
+                if (connectionStatus && modelSelection && setupInstructions && modelInfo) {
+                    if (data.response.includes('not available')) {
+                        connectionStatus.innerHTML = '<i class="fas fa-times-circle"></i> Disconnected';
+                        connectionStatus.className = 'status-info status-disconnected';
+                        setupInstructions.style.display = 'block';
+                        modelSelection.style.display = 'none';
+                        modelInfo.style.display = 'none';
+                    } else {
+                        connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i> Connected';
+                        connectionStatus.className = 'status-info status-connected';
+                        setupInstructions.style.display = 'none';
+                        modelSelection.style.display = 'block';
+                        modelInfo.style.display = 'block';
+                        document.getElementById('modelCount').textContent = '1';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking Ollama status:', error);
+                alert('Error connecting to server for AI status. Please check your connection.');
+            }
+        });
+    }
+
+    // Check server connectivity
+    async function checkServer() {
+        try {
+            console.log('Checking server connectivity');
+            const response = await fetch('/health', { credentials: 'include' });
+            if (!response.ok) {
+                throw new Error(`Server health check failed: ${response.status} ${response.statusText}`);
+            }
+            console.log('Server is running');
+            fetchDashboardData();
+            const notifications = await fetchNotifications();
+            updateNotifications(notifications);
+            fetchTimeEntries();
+        } catch (error) {
+            console.error('Server connectivity error:', error);
+            alert('Cannot connect to server. Please ensure the server is running and try again.');
+        }
+    }
+
+    // Initialize
+    console.log('Initializing dashboard');
+    updateWeekDisplay(new Date().toISOString().split('T')[0]);
+    checkServer();
+    if (refreshStatusBtn) refreshStatusBtn.click();
+    updateTotalHours();
+});</script>
+{% endblock %}
